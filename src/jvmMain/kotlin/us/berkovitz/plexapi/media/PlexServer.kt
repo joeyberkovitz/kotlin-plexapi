@@ -40,13 +40,14 @@ class PlexServer(
 		if (sort != null) {
 			args["sort"] = sort
 		}
-		val mediaContainer: PlaylistResponse = get("/playlists", args = args).body()
+		val mediaContainer: MediaContainer<Playlist> = get("/playlists", args = args).body()
 
-		for (playlist in mediaContainer.playlists) {
+		val retArr = mediaContainer.elements.toTypedArray()
+		for (playlist in retArr) {
 			playlist.setServer(this)
 		}
 
-		return mediaContainer.playlists
+		return retArr
 	}
 
 	fun urlFor(path: String, includeToken: Boolean = true, params: Map<String, String> = mapOf()): String {

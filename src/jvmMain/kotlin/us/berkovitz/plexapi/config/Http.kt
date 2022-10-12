@@ -5,6 +5,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.serialization.kotlinx.xml.*
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -25,7 +26,7 @@ object Http {
 		if (INSTANCE == null) {
 			INSTANCE = HttpClient(CIO) {
 				install(ContentNegotiation) {
-					xml(format = XML {
+					val xmlConfig = XML {
 						val uch = UnknownChildHandler { input, inputKind, descriptor, name, candidates ->
 							logger.debug(
 								"Ignoring unknown XML child: ${
@@ -42,7 +43,10 @@ object Http {
 
 						policy = newPolicy
 						unknownChildHandler = uch
-					})
+					}
+
+					xml(format = xmlConfig, contentType = ContentType.Application.Xml)
+					xml(format = xmlConfig, contentType = ContentType.Text.Xml)
 					json(Json {
 						ignoreUnknownKeys = true
 						explicitNulls = false

@@ -35,12 +35,12 @@ data class MyPlexResource(
 	val publicAddressMatches: String?,
 	val publicAddress: String?,
 	val presence: String?,
-	@XmlElement(true) val connections: Array<ResourceConnection>?,
+	@XmlElement(true) val connections: List<ResourceConnection>?,
 )
 
 @Serializable
 @SerialName("MediaContainer")
 data class ResourceResponse(
 	val size: Int,
-	@XmlElement(true) val resources: Array<MyPlexResource>
+	@XmlElement(true) val resources: List<MyPlexResource>
 )

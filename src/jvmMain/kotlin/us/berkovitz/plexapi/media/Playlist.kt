@@ -5,6 +5,7 @@ import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import nl.adaptivity.xmlutil.serialization.XmlDefault
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import us.berkovitz.plexapi.config.Http
 import us.berkovitz.plexapi.logging.LoggingFactory
@@ -26,22 +27,22 @@ data class PlaylistResponse(
 @SerialName("Playlist")
 data class Playlist(
 	val addedAt: Int,
-	val allowSync: Boolean,
-	val composite: String,
-	val content: String,
-	val duration: Int, // milliseconds
-	val guid: String,
-	val icon: String,
+	val allowSync: Boolean?,
+	val composite: String?,
+	val content: String?,
+	@XmlDefault("0") val duration: Int, // milliseconds
+	val guid: String?,
+	val icon: String?,
 	val key: String, // includes `/items`
 	val leafCount: Int,
-	val librarySectionID: Int,
-	val librarySectionKey: String,
-	val librarySectionTitle: String,
-	val playlistType: String,
-	val radio: Boolean,
-	val ratingKey: Int,
-	val smart: Boolean,
-	val summary: String,
+	val librarySectionID: Int?,
+	val librarySectionKey: String?,
+	val librarySectionTitle: String?,
+	val playlistType: String?,
+	val radio: Boolean?,
+	val ratingKey: Int?,
+	val smart: Boolean?,
+	val summary: String?,
 	val title: String,
 	val type: String,
 	val updatedAt: Int
@@ -67,7 +68,7 @@ data class Playlist(
 			val url = URLBuilder(_server!!.baseUrl).appendPathSegments(listOf(key), false).buildString()
 			val res: MediaContainer<MediaItem> = Http.authenticatedGet(url, null, _server!!.token).body()
 
-			_items = res.elements
+			_items = res.elements.toTypedArray()
 			_items!!.forEach {
 				it.setServer(_server!!)
 			}

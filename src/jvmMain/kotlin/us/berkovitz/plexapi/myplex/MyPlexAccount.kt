@@ -4,6 +4,7 @@ import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import us.berkovitz.plexapi.config.Http
 import us.berkovitz.plexapi.logging.LoggingFactory
+import us.berkovitz.plexapi.media.MediaContainer
 
 class MyPlexAccount(val token: String) {
 	companion object {
@@ -16,15 +17,16 @@ class MyPlexAccount(val token: String) {
 
 	suspend fun resources(): Array<MyPlexResource> {
 		logger.debug("Getting resources")
-		val res: Array<MyPlexResource> = get("https://plex.tv/api/resources?includeHttps=1&includeRelay=1").body()
-		logger.debug(res.contentDeepToString())
-		return res
+		val res: MediaContainer<MyPlexResource> =
+			get("https://plex.tv/api/resources?includeHttps=1&includeRelay=1").body()
+		logger.debug(res.elements.toTypedArray().contentDeepToString())
+		return res.elements.toTypedArray()
 	}
 
 	suspend fun devices(): Array<MyPlexDevice> {
 		logger.debug("Getting devices")
-		val res: Array<MyPlexDevice> = get("https://plex.tv/devices.json").body()
-		logger.debug(res.contentDeepToString())
-		return res
+		val res: MediaContainer<MyPlexDevice> = get("https://plex.tv/devices.json").body()
+		logger.debug(res.elements.toTypedArray().contentDeepToString())
+		return res.elements.toTypedArray()
 	}
 }
