@@ -58,7 +58,7 @@ kotlin {
 		}
 		publications {
 			register<MavenPublication>("gpr") {
-				from(components["java"])
+				//from(components["java"])
 			}
 		}
 	}
