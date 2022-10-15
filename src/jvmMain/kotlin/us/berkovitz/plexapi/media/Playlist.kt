@@ -49,6 +49,14 @@ data class Playlist(
 ) {
 	companion object {
 		private val logger = LoggingFactory.loggerFor(this::class)
+
+		suspend fun fromId(id: Int, server: PlexServer): Playlist? {
+			val url = server.urlFor("/playlists/$id")
+			val res: MediaContainer<Playlist> = Http.authenticatedGet(url, null, server.token).body()
+			if (res.elements.size != 1)
+				return null
+			return res.elements[0]
+		}
 	}
 
 	@Transient

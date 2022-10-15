@@ -1,15 +1,18 @@
 package us.berkovitz.plexapi.media
 
+import io.ktor.client.call.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import nl.adaptivity.xmlutil.serialization.XmlDefault
 import nl.adaptivity.xmlutil.serialization.XmlElement
+import us.berkovitz.plexapi.config.Http
 
 @Serializable
 @SerialName("MediaContainer")
 data class MediaContainer<T>(
 	@SerialName("size") val size: Int,
+
 	@XmlElement(true) val elements: List<T>
 )
 
@@ -64,8 +67,18 @@ data class Track(
 	val musicAnalysisVersion: Int?,
 	@SerialName("Media") @XmlElement(true) val media: List<Media>?
 ) : MediaItem() {
+	companion object {
+		suspend fun fromId(id: Int, server: PlexServer): Track? {
+			val url = server.urlFor("/library/metadata/$id")
+			val res: MediaContainer<Track> = Http.authenticatedGet(url, null, server.token).body()
+			if (res.elements.size != 1)
+				return null
+			return res.elements[0]
+		}
+	}
+
 	fun getStreamUrl(): String {
-		val params = mapOf(
+		/*val params = mapOf(
 			Pair("path", key),
 			Pair("offset", "0"),
 			Pair("copyts", "1"),
@@ -74,9 +87,10 @@ data class Track(
 			Pair("directStreamAudio", "1"),
 			Pair("hasMDE", "1")
 		)
-		val urlPath = "/:/transcode/universal/start.m3u8"
+		val urlPath = "/audio/:/transcode/universal/start.m3u8"*/
+		val urlPath = media?.first()?.parts?.first()?.key ?: ""
 
-		return _server!!.urlFor(urlPath, params = params)
+		return _server!!.urlFor(urlPath)
 	}
 
 	override fun equals(other: Any?): Boolean {

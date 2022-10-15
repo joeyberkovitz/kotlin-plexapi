@@ -10,11 +10,16 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.serialization.kotlinx.xml.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
 import nl.adaptivity.xmlutil.serialization.DefaultXmlSerializationPolicy
 import nl.adaptivity.xmlutil.serialization.UnknownChildHandler
 import nl.adaptivity.xmlutil.serialization.XML
 import us.berkovitz.plexapi.logging.LoggingFactory
+import us.berkovitz.plexapi.media.MediaItem
+import us.berkovitz.plexapi.media.Track
 
 @OptIn(ExperimentalSerializationApi::class, ExperimentalXmlUtilApi::class)
 object Http {
@@ -26,7 +31,13 @@ object Http {
 		if (INSTANCE == null) {
 			INSTANCE = HttpClient(CIO) {
 				install(ContentNegotiation) {
-					val xmlConfig = XML {
+					val serializerModule = SerializersModule {
+						polymorphic(MediaItem::class) {
+							subclass(Track::class)
+						}
+					}
+
+					val xmlConfig = XML(serializerModule) {
 						val uch = UnknownChildHandler { input, inputKind, descriptor, name, candidates ->
 							logger.debug(
 								"Ignoring unknown XML child: ${
@@ -38,6 +49,7 @@ object Http {
 						}
 						val newPolicy = DefaultXmlSerializationPolicy(
 							false,
+							autoPolymorphic = true,
 							unknownChildHandler = uch
 						)
 
