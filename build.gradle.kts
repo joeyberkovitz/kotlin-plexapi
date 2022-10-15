@@ -1,4 +1,10 @@
+import java.io.File
+import java.io.FileInputStream
+import java.util.*
+
 val ktorVersion: String by project
+val gpr_user: String? by project
+val gpr_key: String? by project
 
 plugins {
 	val kotlinVersion = "1.7.20"
@@ -9,7 +15,7 @@ plugins {
 }
 
 group = "us.berkovitz"
-version = "0.1.0"
+version = "0.1.2"
 
 repositories {
 	mavenCentral()
@@ -51,14 +57,12 @@ kotlin {
 				name = "GitHubPackages"
 				url = uri("https://maven.pkg.github.com/joeyberkovitz/kotlin-plexapi")
 				credentials {
-					username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-					password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+					val prop = Properties().apply {
+						load(FileInputStream(File(rootProject.rootDir, "local.properties")))
+					}
+					username = prop.getProperty("gpr_user") as String? ?: System.getenv("GITHUB_ACTOR")
+					password = prop.getProperty("gpr_key") as String? ?: System.getenv("GITHUB_TOKEN")
 				}
-			}
-		}
-		publications {
-			register<MavenPublication>("gpr") {
-				//from(components["java"])
 			}
 		}
 	}
