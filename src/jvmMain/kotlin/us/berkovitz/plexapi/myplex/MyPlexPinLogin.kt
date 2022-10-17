@@ -16,30 +16,10 @@ data class ErrorResponse(val code: Int, val message: String)
 
 @Serializable
 data class PinCheckResponse(
-	val authToken: String?,
-	val errors: Array<ErrorResponse>?
-) {
-	override fun equals(other: Any?): Boolean {
-		if (this === other) return true
-		if (javaClass != other?.javaClass) return false
-
-		other as PinCheckResponse
-
-		if (authToken != other.authToken) return false
-		if (errors != null) {
-			if (other.errors == null) return false
-			if (!errors.contentEquals(other.errors)) return false
-		} else if (other.errors != null) return false
-
-		return true
-	}
-
-	override fun hashCode(): Int {
-		var result = authToken?.hashCode() ?: 0
-		result = 31 * result + (errors?.contentHashCode() ?: 0)
-		return result
-	}
-}
+	val authToken: String?, // equivalent to password
+	val clientIdentifier: String?, // equivalent to username
+	val errors: List<ErrorResponse>?
+)
 
 class MyPlexPinLogin {
 	companion object {
