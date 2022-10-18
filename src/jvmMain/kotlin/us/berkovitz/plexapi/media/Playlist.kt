@@ -55,7 +55,9 @@ data class Playlist(
 			val res: MediaContainer<Playlist> = Http.authenticatedGet(url, null, server.token).body()
 			if (res.elements.size != 1)
 				return null
-			return res.elements[0]
+			return res.elements[0].also {
+				it.setServer(server)
+			}
 		}
 	}
 
