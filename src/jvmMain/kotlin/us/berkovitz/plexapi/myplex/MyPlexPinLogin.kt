@@ -2,6 +2,7 @@ package us.berkovitz.plexapi.myplex
 
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.Serializable
@@ -53,6 +54,8 @@ class MyPlexPinLogin {
 				} else if(!checkPinRes.errors.isNullOrEmpty()){
 					pin = generatePin()
 				}
+			} catch(cancel: CancellationException){
+				throw cancel
 			} catch (ignored: Exception) {
 				pin = generatePin()
 			}
