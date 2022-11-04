@@ -23,13 +23,14 @@ class MyPlexAccount(val token: String) {
 		private val logger = LoggingFactory.loggerFor(MyPlexAccount::class)
 		private const val SIGN_IN_URL = "https://plex.tv/users/sign_in.xml"
 
-		suspend fun login(): String{
+		suspend fun login(username: String, password: String): String {
 			val res: User = Http.getClient().post(SIGN_IN_URL){
 				headers {
 					Http.DEF_HEADERS.map {
 						append(it.key, it.value)
 					}
 				}
+				basicAuth(username, password)
 			}.body()
 			return res.authToken
 		}
