@@ -1,4 +1,3 @@
-import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
@@ -57,11 +56,15 @@ kotlin {
 				name = "GitHubPackages"
 				url = uri("https://maven.pkg.github.com/joeyberkovitz/kotlin-plexapi")
 				credentials {
-					val prop = Properties().apply {
-						load(FileInputStream(File(rootProject.rootDir, "local.properties")))
+					val prop = try {
+						Properties().apply {
+							load(FileInputStream(File(rootProject.rootDir, "local.properties")))
+						}
+					} catch (exc: Exception) {
+						null
 					}
-					username = prop.getProperty("gpr_user") as String? ?: System.getenv("GITHUB_ACTOR")
-					password = prop.getProperty("gpr_key") as String? ?: System.getenv("GITHUB_TOKEN")
+					username = prop?.getProperty("gpr_user") ?: System.getenv("GITHUB_ACTOR")
+					password = prop?.getProperty("gpr_key") ?: System.getenv("GITHUB_TOKEN")
 				}
 			}
 		}

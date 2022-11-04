@@ -8,7 +8,7 @@ import us.berkovitz.plexapi.logging.LoggingFactory
 
 class PlexServer(
 	val baseUrl: String,
-	val token: String
+	val token: String // either token or accessToken
 ) {
 	companion object {
 		private val logger = LoggingFactory.loggerFor(PlexServer::class)

@@ -1,6 +1,5 @@
 package us.berkovitz.plexapi.config
 
-import java.net.InetAddress
 import java.util.*
 
 object Config {
@@ -10,6 +9,9 @@ object Config {
 	var X_PLEX_PRODUCT = "PlexAPI"
 	var X_PLEX_VERSION = "1.0.0"
 	var X_PLEX_DEVICE = X_PLEX_PLATFORM
-	var X_PLEX_DEVICE_NAME = InetAddress.getLocalHost().hostName
+
+	// can't get name easily without triggering network false positives
+	// client is responsible for providing name
+	var X_PLEX_DEVICE_NAME = "N/A"
 	var X_PLEX_IDENTIFIER = UUID.randomUUID().toString() // should be consistent once logged in
 }
