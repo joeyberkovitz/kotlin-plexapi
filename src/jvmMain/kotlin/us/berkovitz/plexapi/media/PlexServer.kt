@@ -16,9 +16,11 @@ class PlexServer(
 
 	suspend fun testConnection(): Boolean {
 		try {
-			val res = get(baseUrl, timeout = 5000)
+			val res = get("/", timeout = 5000)
+			logger.info("Connection to ${baseUrl} status: ${res.status}: ${res.status.isSuccess()}")
 			return res.status.isSuccess()
-		} catch (exc: Exception){
+		} catch (exc: Exception) {
+			logger.info("Connection to ${baseUrl} failed: ${exc.message} ${exc.printStackTrace()}")
 			return false
 		}
 	}

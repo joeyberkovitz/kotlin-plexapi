@@ -31,6 +31,7 @@ object Http {
 	fun getClient(): HttpClient {
 		if (INSTANCE == null) {
 			INSTANCE = HttpClient(CIO) {
+				install(HttpTimeout)
 				install(ContentNegotiation) {
 					val serializerModule = SerializersModule {
 						polymorphic(MediaItem::class) {
