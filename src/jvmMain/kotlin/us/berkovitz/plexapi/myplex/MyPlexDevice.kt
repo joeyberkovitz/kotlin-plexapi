@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MyPlexDevice(
-	val id: Int,
+	val id: Long,
 	val name: String,
 	val product: String,
 	val version: String,

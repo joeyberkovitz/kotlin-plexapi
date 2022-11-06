@@ -10,10 +10,10 @@ import us.berkovitz.plexapi.config.Http
 import us.berkovitz.plexapi.logging.LoggingFactory
 
 @Serializable
-data class PinResponse(val id: Int, val code: String)
+data class PinResponse(val id: Long, val code: String)
 
 @Serializable
-data class ErrorResponse(val code: Int, val message: String)
+data class ErrorResponse(val code: Long, val message: String)
 
 @Serializable
 data class PinCheckResponse(
@@ -30,13 +30,14 @@ class MyPlexPinLogin {
 		private const val PIN_URL = "https://plex.tv/api/v2/pins.json"
 		private const val PIN_CHECK_URL = "https://plex.tv/api/v2/pins/%d.json"
 	}
+
 	var loginTimeout = 0L
 
 	var pinChangeCb: (String) -> Unit = {}
 
 	suspend fun pinLogin(): PinCheckResponse {
-		if(loginTimeout > 0){
-			return withTimeout(loginTimeout){
+		if (loginTimeout > 0) {
+			return withTimeout(loginTimeout) {
 				return@withTimeout doPinLogin()
 			}
 		}
@@ -49,12 +50,12 @@ class MyPlexPinLogin {
 		while (true) {
 			try {
 				val checkPinRes = checkPin(pin.id)
-				if(!checkPinRes.authToken.isNullOrEmpty()){
+				if (!checkPinRes.authToken.isNullOrEmpty()) {
 					return checkPinRes
-				} else if(!checkPinRes.errors.isNullOrEmpty()){
+				} else if (!checkPinRes.errors.isNullOrEmpty()) {
 					pin = generatePin()
 				}
-			} catch(cancel: CancellationException){
+			} catch (cancel: CancellationException) {
 				throw cancel
 			} catch (ignored: Exception) {
 				pin = generatePin()
@@ -64,7 +65,7 @@ class MyPlexPinLogin {
 	}
 
 	private suspend fun generatePin(): PinResponse {
-		val res: PinResponse = Http.getClient().post(PIN_URL){
+		val res: PinResponse = Http.getClient().post(PIN_URL) {
 			headers {
 				Http.DEF_HEADERS.map {
 					append(it.key, it.value)
@@ -77,8 +78,8 @@ class MyPlexPinLogin {
 		return res
 	}
 
-	private suspend fun checkPin(pinId: Int): PinCheckResponse {
-		return Http.getClient().get(PIN_CHECK_URL.format(pinId)){
+	private suspend fun checkPin(pinId: Long): PinCheckResponse {
+		return Http.getClient().get(PIN_CHECK_URL.format(pinId)) {
 			headers {
 				Http.DEF_HEADERS.map {
 					append(it.key, it.value)

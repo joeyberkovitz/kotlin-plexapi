@@ -2,6 +2,7 @@ package us.berkovitz.plexapi.myplex
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import nl.adaptivity.xmlutil.serialization.XmlDefault
 import nl.adaptivity.xmlutil.serialization.XmlElement
 
 @Serializable
@@ -11,8 +12,8 @@ data class ResourceConnection(
 	val address: String,
 	val port: String,
 	val uri: String,
-	val local: Int,
-	val relay: Int?
+	@XmlDefault("0") val local: Int,
+	@XmlDefault("0") val relay: Int?
 )
 
 @Serializable
@@ -30,9 +31,9 @@ data class MyPlexResource(
 	val provides: String?,
 	val owned: String?,
 	val accessToken: String?,
-	val httpsRequired: Int?,
+	@XmlDefault("0") val httpsRequired: Int?,
 	val synced: String?,
-	val relay: Int?,
+	@XmlDefault("0") val relay: Int?,
 	val publicAddressMatches: String?,
 	val publicAddress: String?,
 	val presence: String?,
@@ -42,6 +43,6 @@ data class MyPlexResource(
 @Serializable
 @SerialName("MediaContainer")
 data class ResourceResponse(
-	val size: Int,
+	val size: Long,
 	@XmlElement(true) val resources: List<MyPlexResource>
 )

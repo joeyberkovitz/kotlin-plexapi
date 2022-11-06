@@ -13,7 +13,7 @@ import us.berkovitz.plexapi.media.MediaContainer
 @SerialName("user")
 data class User(
 	val email: String,
-	val id: Int,
+	val id: Long,
 	val uuid: String,
 	val authToken: String
 )
@@ -24,7 +24,7 @@ class MyPlexAccount(val token: String) {
 		private const val SIGN_IN_URL = "https://plex.tv/users/sign_in.xml"
 
 		suspend fun login(username: String, password: String): String {
-			val res: User = Http.getClient().post(SIGN_IN_URL){
+			val res: User = Http.getClient().post(SIGN_IN_URL) {
 				headers {
 					Http.DEF_HEADERS.map {
 						append(it.key, it.value)

@@ -19,38 +19,38 @@ enum class PlaylistType(val string: String) {
 @Serializable
 @SerialName("MediaContainer")
 data class PlaylistResponse(
-	val size: Int,
+	val size: Long,
 	@XmlElement(true) val playlists: Array<Playlist>
 )
 
 @Serializable
 @SerialName("Playlist")
 data class Playlist(
-	val addedAt: Int,
+	val addedAt: Long,
 	val allowSync: Boolean?,
 	val composite: String?,
 	val content: String?,
-	@XmlDefault("0") val duration: Int, // milliseconds
+	@XmlDefault("0") val duration: Long, // milliseconds
 	val guid: String?,
 	val icon: String?,
 	val key: String, // includes `/items`
-	val leafCount: Int,
-	val librarySectionID: Int?,
+	val leafCount: Long,
+	val librarySectionID: Long?,
 	val librarySectionKey: String?,
 	val librarySectionTitle: String?,
 	val playlistType: String?,
 	val radio: Boolean?,
-	val ratingKey: Int?,
+	val ratingKey: Long?,
 	val smart: Boolean?,
 	val summary: String?,
 	val title: String,
 	val type: String,
-	val updatedAt: Int
+	val updatedAt: Long
 ) {
 	companion object {
 		private val logger = LoggingFactory.loggerFor(this::class)
 
-		suspend fun fromId(id: Int, server: PlexServer): Playlist? {
+		suspend fun fromId(id: Long, server: PlexServer): Playlist? {
 			val url = server.urlFor("/playlists/$id")
 			val res: MediaContainer<Playlist> = Http.authenticatedGet(url, null, server.token).body()
 			if (res.elements.size != 1)

@@ -11,7 +11,7 @@ import us.berkovitz.plexapi.config.Http
 @Serializable
 @SerialName("MediaContainer")
 data class MediaContainer<T>(
-	@SerialName("size") val size: Int,
+	@SerialName("size") val size: Long,
 
 	@XmlElement(true) val elements: List<T>
 )
@@ -29,10 +29,10 @@ abstract class MediaItem {
 @Serializable
 @SerialName("Track")
 data class Track(
-	val ratingKey: Int,
+	val ratingKey: Long,
 	val key: String,
-	val parentRatingKey: Int?,
-	val grandparentRatingKey: Int?,
+	val parentRatingKey: Long?,
+	val grandparentRatingKey: Long?,
 	val guid: String,
 	val parentGuid: String?,
 	val grandparentGuid: String?,
@@ -43,32 +43,32 @@ data class Track(
 	val grandparentKey: String?,
 	val parentKey: String?,
 	val librarySectionTitle: String?,
-	val librarySectionID: Int?,
+	val librarySectionID: Long?,
 	val librarySectionKey: String?,
 	val grandparentTitle: String?,
 	val parentTitle: String?,
 	val summary: String?,
-	val index: Int?,
-	val parentIndex: Int?,
-	val ratingCount: Int?,
-	@XmlDefault("0") val viewCount: Int,
-	@XmlDefault("0") val skipCount: Int,
-	val lastViewedAt: Int?,
+	val index: Long?,
+	val parentIndex: Long?,
+	val ratingCount: Long?,
+	@XmlDefault("0") val viewCount: Long,
+	@XmlDefault("0") val skipCount: Long,
+	val lastViewedAt: Long?,
 	val parentYear: Int?,
 	val thumb: String?,
 	val art: String?,
 	val parentThumb: String?,
 	val grandparentThumb: String?,
 	val grandparentArt: String?,
-	val playlistItemID: Int?,
-	@XmlDefault("0") val duration: Int,
+	val playlistItemID: Long?,
+	@XmlDefault("0") val duration: Long,
 	val addedAt: String?,
 	val updatedAt: String?,
-	val musicAnalysisVersion: Int?,
+	val musicAnalysisVersion: Long?,
 	@SerialName("Media") @XmlElement(true) val media: List<Media>?
 ) : MediaItem() {
 	companion object {
-		suspend fun fromId(id: Int, server: PlexServer): Track? {
+		suspend fun fromId(id: Long, server: PlexServer): Track? {
 			val url = server.urlFor("/library/metadata/$id")
 			val res: MediaContainer<Track> = Http.authenticatedGet(url, null, server.token).body()
 			if (res.elements.size != 1)
@@ -112,8 +112,8 @@ data class Track(
 @Serializable
 @SerialName("Media")
 data class Media(
-	val id: Int,
-	@XmlDefault("0") val duration: Int,
+	val id: Long,
+	@XmlDefault("0") val duration: Long,
 	@XmlDefault("0") val bitrate: Int,
 	@XmlDefault("0") val audioChannels: Int,
 	val audioCodec: String?,
@@ -135,19 +135,18 @@ data class Media(
 	}
 
 	override fun hashCode(): Int {
-		val result = id
-		return result
+		return id.hashCode()
 	}
 }
 
 @Serializable
 @SerialName("Part")
 data class Part(
-	val id: Int,
+	val id: Long,
 	val key: String,
-	@XmlDefault("0") val duration: Int,
+	@XmlDefault("0") val duration: Long,
 	val file: String,
-	@XmlDefault("0") val size: Int,
+	@XmlDefault("0") val size: Long,
 	val audioProfile: String?,
 	val container: String?,
 	@XmlDefault("0") val has64BitOffsets: Int,
