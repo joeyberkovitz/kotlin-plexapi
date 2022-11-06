@@ -11,7 +11,8 @@ data class ResourceConnection(
 	val address: String,
 	val port: String,
 	val uri: String,
-	val local: Int
+	val local: Int,
+	val relay: Int?
 )
 
 @Serializable

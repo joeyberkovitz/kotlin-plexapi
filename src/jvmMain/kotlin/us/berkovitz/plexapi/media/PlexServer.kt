@@ -14,13 +14,25 @@ class PlexServer(
 		private val logger = LoggingFactory.loggerFor(PlexServer::class)
 	}
 
-	private suspend fun get(url: String, args: Map<String, String>, headers: Map<String, String>? = null):
+	suspend fun testConnection(): Boolean {
+		try {
+			val res = get(baseUrl, timeout = 5000)
+			return res.status.isSuccess()
+		} catch (exc: Exception){
+			return false
+		}
+	}
+
+	private suspend fun get(
+		url: String, args: Map<String, String> = emptyMap(), headers: Map<String, String>? = null,
+		timeout: Long = 0
+	):
 			HttpResponse {
 		val urlBuilder = URLBuilder(baseUrl).appendPathSegments(listOf(url), false)
 		for (arg in args) {
 			urlBuilder.parameters[arg.key] = arg.value
 		}
-		return Http.authenticatedGet(urlBuilder.buildString(), headers, token)
+		return Http.authenticatedGet(urlBuilder.buildString(), headers, token, timeout = timeout)
 	}
 
 	suspend fun playlists(

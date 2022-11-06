@@ -2,6 +2,7 @@ package us.berkovitz.plexapi.config
 
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -69,7 +70,10 @@ object Http {
 		return INSTANCE!!
 	}
 
-	suspend fun authenticatedGet(url: String, headers: Map<String, String>? = null, token: String = ""):
+	suspend fun authenticatedGet(
+		url: String, headers: Map<String, String>? = null, token: String = "",
+		timeout: Long = 0
+	):
 			HttpResponse {
 		return getClient().get(url) {
 			headers {
@@ -83,6 +87,11 @@ object Http {
 				// override headers with provided values
 				headers?.map {
 					set(it.key, it.value)
+				}
+			}
+			if (timeout > 0) {
+				timeout {
+					requestTimeoutMillis = timeout
 				}
 			}
 		}
