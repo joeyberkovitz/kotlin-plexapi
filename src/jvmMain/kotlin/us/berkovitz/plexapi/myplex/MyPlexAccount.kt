@@ -3,6 +3,7 @@ package us.berkovitz.plexapi.myplex
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import us.berkovitz.plexapi.config.Http
@@ -24,15 +25,38 @@ class MyPlexAccount(val token: String) {
 		private const val SIGN_IN_URL = "https://plex.tv/users/sign_in.xml"
 
 		suspend fun login(username: String, password: String): String {
-			val res: User = Http.getClient().post(SIGN_IN_URL) {
+			val res = Http.getClient().post(SIGN_IN_URL) {
 				headers {
 					Http.DEF_HEADERS.map {
 						append(it.key, it.value)
 					}
 				}
 				basicAuth(username, password)
-			}.body()
-			return res.authToken
+			}
+
+			if (res.status.isSuccess()) {
+				try {
+					val successRes: User = res.body()
+					return successRes.authToken
+				} catch (exc: NoTransformationFoundException) {
+					logger.error(
+						"Error decoding login response: ${res.bodyAsText()}, ${exc.message}" +
+								" ${exc.printStackTrace()}"
+					)
+					throw Exception("login error")
+				}
+			} else {
+				try {
+					val errorRes: Errors = res.body()
+					throw Exception(errorRes.errors.first().message)
+				} catch (exc: NoTransformationFoundException) {
+					logger.error(
+						"Error decoding login error response: ${res.bodyAsText()}, ${exc.message}" +
+								" ${exc.printStackTrace()}"
+					)
+					throw Exception("login error")
+				}
+			}
 		}
 	}
 
