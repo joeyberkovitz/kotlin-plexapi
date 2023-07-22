@@ -77,7 +77,7 @@ class MyPlexAccount(val token: String) {
 
 	suspend fun users(): Array<MyPlexUser> {
 		logger.debug("Getting users")
-		val res: MediaContainer<MyPlexUser> = get("https://plex.tv/devices.json").body()
+		val res: MediaContainer<MyPlexUser> = get("https://plex.tv/api/users").body()
 		logger.debug(res.elements.toTypedArray().contentDeepToString())
 		return res.elements.toTypedArray()
 	}
