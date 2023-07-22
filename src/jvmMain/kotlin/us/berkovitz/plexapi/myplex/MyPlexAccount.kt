@@ -46,22 +46,18 @@ class MyPlexAccount(val token: String) {
 					throw Exception("login error")
 				}
 			} else {
-				try {
-					val errorRes: Errors = res.body()
-					throw Exception(errorRes.errors.first().message)
-				} catch (exc: NoTransformationFoundException) {
-					logger.error(
-						"Error decoding login error response: ${res.bodyAsText()}, ${exc.message}" +
-								" ${exc.printStackTrace()}"
-					)
-					throw Exception("login error")
-				}
+				handleErrors(res)
 			}
+			throw Exception("invalid response", null)
 		}
 	}
 
 	private suspend fun get(url: String, headers: Map<String, String>? = null): HttpResponse {
 		return Http.authenticatedGet(url, headers, token)
+	}
+
+	private suspend fun post(url: String, headers: Map<String, String>? = null): HttpResponse {
+		return Http.authenticatedPost(url, headers, token)
 	}
 
 	suspend fun resources(): Array<MyPlexResource> {
@@ -77,5 +73,23 @@ class MyPlexAccount(val token: String) {
 		val res: MediaContainer<MyPlexDevice> = get("https://plex.tv/devices.json").body()
 		logger.debug(res.elements.toTypedArray().contentDeepToString())
 		return res.elements.toTypedArray()
+	}
+
+	suspend fun users(): Array<MyPlexUser> {
+		logger.debug("Getting users")
+		val res: MediaContainer<MyPlexUser> = get("https://plex.tv/devices.json").body()
+		logger.debug(res.elements.toTypedArray().contentDeepToString())
+		return res.elements.toTypedArray()
+	}
+
+	suspend fun switchUser(userId: String, userPin: String?): String {
+		logger.debug("Switching user")
+		var url = "https://plex.tv/api/home/users/${userId}/switch"
+		if( !userPin.isNullOrEmpty()){
+			url += "?pin=${userPin}"
+		}
+
+		val res: User = post(url).body()
+		return res.authToken
 	}
 }
