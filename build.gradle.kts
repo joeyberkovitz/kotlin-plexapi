@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "us.berkovitz"
-version = "0.1.13"
+version = "0.1.14"
 
 repositories {
 	mavenCentral()
