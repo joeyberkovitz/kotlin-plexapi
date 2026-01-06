@@ -76,4 +76,68 @@ class PlexServer(
 		return urlOut.buildString()
 	}
 
+	/**
+	 * Get all library sections from this server.
+	 */
+	suspend fun librarySections(): List<LibrarySection> {
+		val res: LibrarySectionsResponse = get("/library/sections").body()
+		return res.sections
+	}
+
+	/**
+	 * Find the first music library section.
+	 * Music libraries have type="artist".
+	 */
+	suspend fun musicSection(): LibrarySection? {
+		return librarySections().find { it.type == "artist" }
+	}
+
+	/**
+	 * Get all artists from a library section.
+	 * @param sectionId The library section key
+	 */
+	suspend fun artists(sectionId: String): List<Artist> {
+		val args = mapOf("type" to "8") // type 8 = artist
+		val res: MediaContainer<Artist> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { artist -> artist.setServer(this) } }
+	}
+
+	/**
+	 * Get all albums from a library section.
+	 * @param sectionId The library section key
+	 */
+	suspend fun albums(sectionId: String): List<Album> {
+		val args = mapOf("type" to "9") // type 9 = album
+		val res: MediaContainer<Album> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { album -> album.setServer(this) } }
+	}
+
+	/**
+	 * Get all tracks from a library section.
+	 * @param sectionId The library section key
+	 */
+	suspend fun tracks(sectionId: String): List<Track> {
+		val args = mapOf("type" to "10") // type 10 = track
+		val res: MediaContainer<Track> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
+	 * Get albums for a specific artist.
+	 * @param artistRatingKey The artist's rating key
+	 */
+	suspend fun artistAlbums(artistRatingKey: Long): List<Album> {
+		val res: MediaContainer<Album> = get("/library/metadata/$artistRatingKey/children").body()
+		return res.elements.map { it.also { album -> album.setServer(this) } }
+	}
+
+	/**
+	 * Get tracks for a specific album.
+	 * @param albumRatingKey The album's rating key
+	 */
+	suspend fun albumTracks(albumRatingKey: Long): List<Track> {
+		val res: MediaContainer<Track> = get("/library/metadata/$albumRatingKey/children").body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
 }
