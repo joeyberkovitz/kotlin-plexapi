@@ -39,8 +39,10 @@ object Http {
                     val serializerModule = SerializersModule {
                         polymorphic(MediaItem::class) {
                             subclass(Track::class)
-                            subclass(Artist::class)
-                            subclass(Album::class)
+                            // Note: Artist and Album both use @SerialName("Directory")
+                            // so they can't be in the same polymorphic module.
+                            // They're deserialized directly via MediaContainer<Artist>
+                            // or MediaContainer<Album> instead.
                         }
                     }
 

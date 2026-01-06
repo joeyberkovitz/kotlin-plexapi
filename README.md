@@ -96,7 +96,7 @@ for (playlist in playlists) {
 - Added `Album` data class with `tracks()` and `artist()` methods
 - Added `Tag` data class for genres, countries, styles, moods
 - Added `PlexServer` methods for music library browsing
-- Registered `Artist` and `Album` in polymorphic serializer
+- Fixed polymorphic serialization conflict between `Artist` and `Album` (both use `@SerialName("Directory")`)
 
 ### v0.1.17
 - Added `originalTitle` field support
