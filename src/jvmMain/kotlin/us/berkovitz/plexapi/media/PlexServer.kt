@@ -140,4 +140,56 @@ class PlexServer(
 		return res.elements.map { it.also { track -> track.setServer(this) } }
 	}
 
+	/**
+	 * Get recently added tracks from the music library.
+	 * @param sectionId The music library section key
+	 * @param limit Maximum number of items to return (default 50)
+	 */
+	suspend fun recentlyAddedTracks(sectionId: String, limit: Int = 50): List<Track> {
+		val args = mapOf("type" to "10", "sort" to "addedAt:desc", "X-Plex-Container-Start" to "0", "X-Plex-Container-Size" to limit.toString())
+		val res: MediaContainer<Track> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
+	 * Get recently added albums from the music library.
+	 * @param sectionId The music library section key
+	 * @param limit Maximum number of items to return (default 50)
+	 */
+	suspend fun recentlyAddedAlbums(sectionId: String, limit: Int = 50): List<Album> {
+		val args = mapOf("type" to "9", "sort" to "addedAt:desc", "X-Plex-Container-Start" to "0", "X-Plex-Container-Size" to limit.toString())
+		val res: MediaContainer<Album> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { album -> album.setServer(this) } }
+	}
+
+	/**
+	 * Get recently played tracks from the music library.
+	 * @param sectionId The music library section key
+	 * @param limit Maximum number of items to return (default 50)
+	 */
+	suspend fun recentlyPlayedTracks(sectionId: String, limit: Int = 50): List<Track> {
+		val args = mapOf(
+			"type" to "10",
+			"sort" to "lastViewedAt:desc",
+			"viewCount%3E" to "0",
+			"X-Plex-Container-Start" to "0",
+			"X-Plex-Container-Size" to limit.toString()
+		)
+		val res: MediaContainer<Track> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
+	 * Get on deck / continue listening items.
+	 */
+	suspend fun onDeck(): List<Track> {
+		try {
+			val res: MediaContainer<Track> = get("/library/onDeck").body()
+			return res.elements.map { it.also { track -> track.setServer(this) } }
+		} catch (e: Exception) {
+			logger.warn("Failed to get onDeck: ${e.message}")
+			return emptyList()
+		}
+	}
+
 }
