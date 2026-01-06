@@ -47,6 +47,7 @@ data class Track(
 	val librarySectionKey: String?,
 	val grandparentTitle: String?,
 	val parentTitle: String?,
+	val originalTitle: String?,
 	val summary: String?,
 	val index: Long?,
 	val parentIndex: Long?,
