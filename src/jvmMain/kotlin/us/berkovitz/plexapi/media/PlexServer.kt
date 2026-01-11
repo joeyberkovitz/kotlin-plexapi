@@ -141,6 +141,24 @@ class PlexServer(
 	}
 
 	/**
+	 * Get albums for a specific artist.
+	 * @param artistRatingKey The artist's rating key
+	 */
+	suspend fun artistAlbums(artistRatingKey: Long): List<Album> {
+		val res: MediaContainer<Album> = get("/library/metadata/$artistRatingKey/children").body()
+		return res.elements.map { it.also { album -> album.setServer(this) } }
+	}
+
+	/**
+	 * Get tracks for a specific album.
+	 * @param albumRatingKey The album's rating key
+	 */
+	suspend fun albumTracks(albumRatingKey: Long): List<Track> {
+		val res: MediaContainer<Track> = get("/library/metadata/$albumRatingKey/children").body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
 	 * Get recently added tracks from the music library.
 	 * @param sectionId The music library section key
 	 * @param limit Maximum number of items to return (default 50)
