@@ -81,7 +81,7 @@ class PlexServer(
 	 */
 	suspend fun librarySections(): List<LibrarySection> {
 		val res: LibrarySectionsResponse = get("/library/sections").body()
-		return res.sections
+		return res.sections.map { it.also { section -> section.setServer(this) } }
 	}
 
 	/**
@@ -93,50 +93,50 @@ class PlexServer(
 	}
 
 	/**
-	 * Get all artists from a library section.
+	 * Get artists from a library section with pagination support.
 	 * @param sectionId The library section key
+	 * @param start Starting index for pagination (default 0)
+	 * @param size Maximum number of items to return (default 100, use 0 for all)
 	 */
-	suspend fun artists(sectionId: String): List<Artist> {
-		val args = mapOf("type" to "8") // type 8 = artist
+	suspend fun artists(sectionId: String, start: Int = 0, size: Int = 100): List<Artist> {
+		val args = mutableMapOf("type" to "8") // type 8 = artist
+		if (size > 0) {
+			args["X-Plex-Container-Start"] = start.toString()
+			args["X-Plex-Container-Size"] = size.toString()
+		}
 		val res: MediaContainer<Artist> = get("/library/sections/$sectionId/all", args).body()
 		return res.elements.map { it.also { artist -> artist.setServer(this) } }
 	}
 
 	/**
-	 * Get all albums from a library section.
+	 * Get albums from a library section with pagination support.
 	 * @param sectionId The library section key
+	 * @param start Starting index for pagination (default 0)
+	 * @param size Maximum number of items to return (default 100, use 0 for all)
 	 */
-	suspend fun albums(sectionId: String): List<Album> {
-		val args = mapOf("type" to "9") // type 9 = album
+	suspend fun albums(sectionId: String, start: Int = 0, size: Int = 100): List<Album> {
+		val args = mutableMapOf("type" to "9") // type 9 = album
+		if (size > 0) {
+			args["X-Plex-Container-Start"] = start.toString()
+			args["X-Plex-Container-Size"] = size.toString()
+		}
 		val res: MediaContainer<Album> = get("/library/sections/$sectionId/all", args).body()
 		return res.elements.map { it.also { album -> album.setServer(this) } }
 	}
 
 	/**
-	 * Get all tracks from a library section.
+	 * Get tracks from a library section with pagination support.
 	 * @param sectionId The library section key
+	 * @param start Starting index for pagination (default 0)
+	 * @param size Maximum number of items to return (default 100, use 0 for all)
 	 */
-	suspend fun tracks(sectionId: String): List<Track> {
-		val args = mapOf("type" to "10") // type 10 = track
+	suspend fun tracks(sectionId: String, start: Int = 0, size: Int = 100): List<Track> {
+		val args = mutableMapOf("type" to "10") // type 10 = track
+		if (size > 0) {
+			args["X-Plex-Container-Start"] = start.toString()
+			args["X-Plex-Container-Size"] = size.toString()
+		}
 		val res: MediaContainer<Track> = get("/library/sections/$sectionId/all", args).body()
-		return res.elements.map { it.also { track -> track.setServer(this) } }
-	}
-
-	/**
-	 * Get albums for a specific artist.
-	 * @param artistRatingKey The artist's rating key
-	 */
-	suspend fun artistAlbums(artistRatingKey: Long): List<Album> {
-		val res: MediaContainer<Album> = get("/library/metadata/$artistRatingKey/children").body()
-		return res.elements.map { it.also { album -> album.setServer(this) } }
-	}
-
-	/**
-	 * Get tracks for a specific album.
-	 * @param albumRatingKey The album's rating key
-	 */
-	suspend fun albumTracks(albumRatingKey: Long): List<Track> {
-		val res: MediaContainer<Track> = get("/library/metadata/$albumRatingKey/children").body()
 		return res.elements.map { it.also { track -> track.setServer(this) } }
 	}
 

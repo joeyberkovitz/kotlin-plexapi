@@ -70,12 +70,3 @@ data class Artist(
 		}
 	}
 }
-
-/**
- * Generic tag element used for genres, countries, styles, moods.
- */
-@Serializable
-data class Tag(
-	val tag: String,
-	val id: Long? = null
-)
