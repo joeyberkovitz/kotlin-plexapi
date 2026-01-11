@@ -20,6 +20,8 @@ import nl.adaptivity.xmlutil.serialization.DefaultXmlSerializationPolicy
 import nl.adaptivity.xmlutil.serialization.UnknownChildHandler
 import nl.adaptivity.xmlutil.serialization.XML
 import us.berkovitz.plexapi.logging.LoggingFactory
+import us.berkovitz.plexapi.media.Album
+import us.berkovitz.plexapi.media.Artist
 import us.berkovitz.plexapi.media.MediaItem
 import us.berkovitz.plexapi.media.Track
 import us.berkovitz.plexapi.myplex.handleErrors
@@ -43,6 +45,10 @@ object Http {
                     val serializerModule = SerializersModule {
                         polymorphic(MediaItem::class) {
                             subclass(Track::class)
+                            // Note: Artist and Album both use @SerialName("Directory")
+                            // so they can't be in the same polymorphic module.
+                            // They're deserialized directly via MediaContainer<Artist>
+                            // or MediaContainer<Album> instead.
                         }
                     }
 

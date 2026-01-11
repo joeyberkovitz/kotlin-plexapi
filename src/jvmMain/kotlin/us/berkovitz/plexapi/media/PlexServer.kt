@@ -6,12 +6,49 @@ import io.ktor.http.*
 import us.berkovitz.plexapi.config.Http
 import us.berkovitz.plexapi.logging.LoggingFactory
 
+/**
+ * Media type constants for Plex API queries.
+ */
+enum class MediaType(val value: String) {
+	ARTIST("8"),
+	ALBUM("9"),
+	TRACK("10")
+}
+
 class PlexServer(
 	val baseUrl: String,
 	val token: String // either token or accessToken
 ) {
 	companion object {
 		private val logger = LoggingFactory.loggerFor(PlexServer::class)
+	}
+
+	/**
+	 * Build pagination arguments for API requests.
+	 * @param start Starting index (0-based)
+	 * @param size Maximum number of items (0 = no limit)
+	 * @return Map of pagination parameters
+	 */
+	private fun paginationArgs(start: Int, size: Int): MutableMap<String, String> {
+		val args = mutableMapOf<String, String>()
+		if (size > 0) {
+			args["X-Plex-Container-Start"] = start.toString()
+			args["X-Plex-Container-Size"] = size.toString()
+		}
+		return args
+	}
+
+	/**
+	 * Build arguments for a library section query with type and pagination.
+	 * @param type The media type to filter by
+	 * @param start Starting index for pagination
+	 * @param size Maximum number of items
+	 * @return Map of query parameters
+	 */
+	private fun sectionQueryArgs(type: MediaType, start: Int, size: Int): MutableMap<String, String> {
+		val args = paginationArgs(start, size)
+		args["type"] = type.value
+		return args
 	}
 
 	suspend fun testConnection(): Boolean {
@@ -74,6 +111,126 @@ class PlexServer(
 		}
 
 		return urlOut.buildString()
+	}
+
+	/**
+	 * Get all library sections from this server.
+	 */
+	suspend fun librarySections(): List<LibrarySection> {
+		val res: LibrarySectionsResponse = get("/library/sections").body()
+		return res.sections.map { it.also { section -> section.setServer(this) } }
+	}
+
+	/**
+	 * Find the first music library section.
+	 * Music libraries have type="artist".
+	 */
+	suspend fun musicSection(): LibrarySection? {
+		return librarySections().find { it.type == "artist" }
+	}
+
+	/**
+	 * Get artists from a library section with pagination support.
+	 * @param sectionId The library section key
+	 * @param start Starting index for pagination (default 0)
+	 * @param size Maximum number of items to return (default 100, use 0 for all)
+	 */
+	suspend fun artists(sectionId: String, start: Int = 0, size: Int = 100): List<Artist> {
+		val args = sectionQueryArgs(MediaType.ARTIST, start, size)
+		val res: MediaContainer<Artist> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { artist -> artist.setServer(this) } }
+	}
+
+	/**
+	 * Get albums from a library section with pagination support.
+	 * @param sectionId The library section key
+	 * @param start Starting index for pagination (default 0)
+	 * @param size Maximum number of items to return (default 100, use 0 for all)
+	 */
+	suspend fun albums(sectionId: String, start: Int = 0, size: Int = 100): List<Album> {
+		val args = sectionQueryArgs(MediaType.ALBUM, start, size)
+		val res: MediaContainer<Album> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { album -> album.setServer(this) } }
+	}
+
+	/**
+	 * Get tracks from a library section with pagination support.
+	 * @param sectionId The library section key
+	 * @param start Starting index for pagination (default 0)
+	 * @param size Maximum number of items to return (default 100, use 0 for all)
+	 */
+	suspend fun tracks(sectionId: String, start: Int = 0, size: Int = 100): List<Track> {
+		val args = sectionQueryArgs(MediaType.TRACK, start, size)
+		val res: MediaContainer<Track> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
+	 * Get albums for a specific artist.
+	 * @param artistRatingKey The artist's rating key
+	 */
+	suspend fun artistAlbums(artistRatingKey: Long): List<Album> {
+		val res: MediaContainer<Album> = get("/library/metadata/$artistRatingKey/children").body()
+		return res.elements.map { it.also { album -> album.setServer(this) } }
+	}
+
+	/**
+	 * Get tracks for a specific album.
+	 * @param albumRatingKey The album's rating key
+	 */
+	suspend fun albumTracks(albumRatingKey: Long): List<Track> {
+		val res: MediaContainer<Track> = get("/library/metadata/$albumRatingKey/children").body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
+	 * Get recently added tracks from the music library.
+	 * @param sectionId The music library section key
+	 * @param limit Maximum number of items to return (default 50)
+	 */
+	suspend fun recentlyAddedTracks(sectionId: String, limit: Int = 50): List<Track> {
+		val args = sectionQueryArgs(MediaType.TRACK, 0, limit)
+		args["sort"] = "addedAt:desc"
+		val res: MediaContainer<Track> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
+	 * Get recently added albums from the music library.
+	 * @param sectionId The music library section key
+	 * @param limit Maximum number of items to return (default 50)
+	 */
+	suspend fun recentlyAddedAlbums(sectionId: String, limit: Int = 50): List<Album> {
+		val args = sectionQueryArgs(MediaType.ALBUM, 0, limit)
+		args["sort"] = "addedAt:desc"
+		val res: MediaContainer<Album> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { album -> album.setServer(this) } }
+	}
+
+	/**
+	 * Get recently played tracks from the music library.
+	 * @param sectionId The music library section key
+	 * @param limit Maximum number of items to return (default 50)
+	 */
+	suspend fun recentlyPlayedTracks(sectionId: String, limit: Int = 50): List<Track> {
+		val args = sectionQueryArgs(MediaType.TRACK, 0, limit)
+		args["sort"] = "lastViewedAt:desc"
+		args["viewCount%3E"] = "0"
+		val res: MediaContainer<Track> = get("/library/sections/$sectionId/all", args).body()
+		return res.elements.map { it.also { track -> track.setServer(this) } }
+	}
+
+	/**
+	 * Get on deck / continue listening items.
+	 */
+	suspend fun onDeck(): List<Track> {
+		try {
+			val res: MediaContainer<Track> = get("/library/onDeck").body()
+			return res.elements.map { it.also { track -> track.setServer(this) } }
+		} catch (e: Exception) {
+			logger.warn("Failed to get onDeck: ${e.message}")
+			return emptyList()
+		}
 	}
 
 }
