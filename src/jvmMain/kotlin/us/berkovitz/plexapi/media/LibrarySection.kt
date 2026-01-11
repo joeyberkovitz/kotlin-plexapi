@@ -1,11 +1,8 @@
 package us.berkovitz.plexapi.media
 
-import io.ktor.client.call.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import nl.adaptivity.xmlutil.serialization.XmlElement
-import us.berkovitz.plexapi.config.Http
 
 /**
  * Represents a Plex library section (e.g., Music, Movies, TV Shows).
@@ -29,14 +26,7 @@ data class LibrarySection(
 	val updatedAt: Long? = null,
 	val scannedAt: Long? = null,
 	@XmlElement(true) @SerialName("Location") val locations: List<LibrarySectionLocation>? = null
-) {
-	@Transient
-	var _server: PlexServer? = null
-
-	fun setServer(server: PlexServer) {
-		this._server = server
-	}
-
+) : MediaItem() {
 	/**
 	 * Get artists from this library section with pagination support.
 	 * @param start Starting index for pagination (default 0)
