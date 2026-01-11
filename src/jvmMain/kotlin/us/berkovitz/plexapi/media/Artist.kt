@@ -3,8 +3,6 @@ package us.berkovitz.plexapi.media
 import io.ktor.client.call.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
-import nl.adaptivity.xmlutil.serialization.XmlDefault
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import us.berkovitz.plexapi.config.Http
 
