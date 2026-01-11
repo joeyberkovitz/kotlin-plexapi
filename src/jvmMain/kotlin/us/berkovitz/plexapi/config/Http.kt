@@ -1,6 +1,7 @@
 package us.berkovitz.plexapi.config
 
 import io.ktor.client.*
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -28,10 +29,15 @@ object Http {
     private val logger = LoggingFactory.loggerFor(this::class)
     private var INSTANCE: HttpClient? = null
     val DEF_HEADERS = resetHeaders()
+    private var engine: HttpClientEngine? = null
+
+    fun setEngine(engine: HttpClientEngine?) {
+        this.engine = engine
+    }
 
     fun getClient(): HttpClient {
         if (INSTANCE == null) {
-            INSTANCE = HttpClient(CIO) {
+            INSTANCE = HttpClient(engine ?: CIO.create()) {
                 install(HttpTimeout)
                 install(ContentNegotiation) {
                     val serializerModule = SerializersModule {

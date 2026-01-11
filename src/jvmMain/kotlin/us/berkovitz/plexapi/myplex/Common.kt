@@ -6,26 +6,29 @@ import io.ktor.http.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlValue
 
-@Serializable
-data class PlexBool(val value: Boolean) {
-    @Serializer(forClass=PlexBool::class)
-    companion object: KSerializer<PlexBool> {
-        override fun deserialize(decoder: Decoder): PlexBool {
-            val strVal = decoder.decodeString()
-            val intVal = strVal.toIntOrNull()
-            return PlexBool(intVal == 1)
-        }
+typealias PlexBool = @Serializable(PlexBoolSerializer::class) Boolean
 
-        override fun serialize(encoder: Encoder, value: PlexBool) {
-            encoder.encodeString(if(value.value) "1" else "0")
-        }
+object PlexBoolSerializer : KSerializer<Boolean> {
+    override fun deserialize(decoder: Decoder): Boolean {
+        val strVal = decoder.decodeString()
+        val intVal = strVal.toIntOrNull()
+        return intVal == 1
     }
+
+    override fun serialize(encoder: Encoder, value: Boolean) {
+        encoder.encodeString(if (value) "1" else "0")
+    }
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("us.berkovitz.plexapi.myplex.PlexBool", PrimitiveKind.STRING)
 }
 
 @Serializable

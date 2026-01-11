@@ -9,19 +9,13 @@ import nl.adaptivity.xmlutil.serialization.XmlDefault
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import us.berkovitz.plexapi.config.Http
 import us.berkovitz.plexapi.logging.LoggingFactory
+import us.berkovitz.plexapi.myplex.PlexBool
 
 enum class PlaylistType(val string: String) {
 	AUDIO("audio"),
 	VIDEO("video"),
 	PHOTO("photo")
 }
-
-@Serializable
-@SerialName("MediaContainer")
-data class PlaylistResponse(
-	val size: Long,
-	@XmlElement(true) val playlists: Array<Playlist>
-)
 
 @Serializable
 @SerialName("Playlist")
@@ -41,9 +35,10 @@ data class Playlist(
 	val playlistType: String?,
 	val radio: Boolean?,
 	val ratingKey: Long?,
-	val smart: Boolean?,
+	val smart: PlexBool?,
 	val summary: String?,
 	val title: String,
+	val titleSort: String?,
 	val type: String,
 	val updatedAt: Long
 ) {
