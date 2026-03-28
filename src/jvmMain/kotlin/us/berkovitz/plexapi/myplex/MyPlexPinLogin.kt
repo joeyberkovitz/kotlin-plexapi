@@ -27,6 +27,8 @@ class MyPlexPinLogin {
 		private val logger = LoggingFactory.loggerFor(MyPlexPinLogin::class)
 
 		private const val POLLINTERVAL = 1000L
+		private const val INITIAL_BACKOFF = 2000L
+		private const val MAX_BACKOFF = 30000L
 		private const val PIN_URL = "https://plex.tv/api/v2/pins.json"
 		private const val PIN_CHECK_URL = "https://plex.tv/api/v2/pins/%d.json"
 	}
@@ -46,6 +48,7 @@ class MyPlexPinLogin {
 
 	private suspend fun doPinLogin(): PinCheckResponse {
 		var pin = generatePin()
+		var backoff = INITIAL_BACKOFF
 		delay(POLLINTERVAL)
 		while (true) {
 			try {
@@ -53,11 +56,19 @@ class MyPlexPinLogin {
 				if (!checkPinRes.authToken.isNullOrEmpty()) {
 					return checkPinRes
 				} else if (!checkPinRes.errors.isNullOrEmpty()) {
+					logger.warn("Pin check returned errors: ${checkPinRes.errors}, retrying in ${backoff}ms")
+					delay(backoff)
+					backoff = (backoff * 2).coerceAtMost(MAX_BACKOFF)
 					pin = generatePin()
+				} else {
+					backoff = INITIAL_BACKOFF
 				}
 			} catch (cancel: CancellationException) {
 				throw cancel
-			} catch (ignored: Exception) {
+			} catch (e: Exception) {
+				logger.warn("Pin check failed: ${e.message}, retrying in ${backoff}ms")
+				delay(backoff)
+				backoff = (backoff * 2).coerceAtMost(MAX_BACKOFF)
 				pin = generatePin()
 			}
 			delay(POLLINTERVAL)
