@@ -7,6 +7,15 @@ import kotlinx.serialization.Transient
 import nl.adaptivity.xmlutil.serialization.XmlDefault
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import us.berkovitz.plexapi.config.Http
+import java.util.UUID
+
+enum class Container {
+	WebM
+}
+
+enum class AudioCodec {
+	Opus
+}
 
 @Serializable
 @SerialName("MediaContainer")
@@ -79,19 +88,24 @@ data class Track(
 	}
 
 	fun getStreamUrl(): String {
-		/*val params = mapOf(
-			Pair("path", key),
-			Pair("offset", "0"),
-			Pair("copyts", "1"),
-			Pair("mediaIndex", "0"),
-			Pair("X-Plex-Platform", "Chrome"),
-			Pair("directStreamAudio", "1"),
-			Pair("hasMDE", "1")
-		)
-		val urlPath = "/audio/:/transcode/universal/start.m3u8"*/
 		val urlPath = media?.first()?.parts?.first()?.key ?: ""
-
 		return _server!!.urlFor(urlPath)
+	}
+
+	fun getTranscodeStreamUrl(bitrate: Int, container: Container = Container.WebM, audioCodec: AudioCodec = AudioCodec.Opus): String {
+		val params = mapOf(
+			Pair("transcodeSessionId", UUID.randomUUID().toString()),
+			Pair("path", key),
+			Pair("mediaIndex", "0"),
+			Pair("partIndex", "0"),
+			Pair("directPlay", "0"),
+			Pair("directStreamAudio", "0"),
+			Pair("musicBitrate", bitrate.toString()),
+			Pair("protocol", "dash"),
+			Pair("X-Plex-Client-Profile-Name", "Android"),
+			Pair("X-Plex-Client-Profile-Extra", "add-transcode-target(type=musicProfile&context=streaming&protocol=dash&container=${container.name.lowercase()}&audioCodec=${audioCodec.name.lowercase()})")
+		)
+		return _server!!.urlFor("/music/:/transcode/universal/start.mpd", true, params)
 	}
 
 	override fun equals(other: Any?): Boolean {
