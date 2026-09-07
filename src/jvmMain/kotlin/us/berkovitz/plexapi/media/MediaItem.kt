@@ -9,6 +9,14 @@ import nl.adaptivity.xmlutil.serialization.XmlElement
 import us.berkovitz.plexapi.config.Http
 import java.util.UUID
 
+enum class Container {
+	WebM
+}
+
+enum class AudioCodec {
+	Opus
+}
+
 @Serializable
 @SerialName("MediaContainer")
 data class MediaContainer<T>(
@@ -84,7 +92,7 @@ data class Track(
 		return _server!!.urlFor(urlPath)
 	}
 
-	fun getTranscodeStreamUrl(bitrate: Int): String {
+	fun getTranscodeStreamUrl(bitrate: Int, container: Container = Container.WebM, audioCodec: AudioCodec = AudioCodec.Opus): String {
 		val params = mapOf(
 			Pair("transcodeSessionId", UUID.randomUUID().toString()),
 			Pair("path", key),
@@ -95,7 +103,7 @@ data class Track(
 			Pair("musicBitrate", bitrate.toString()),
 			Pair("protocol", "dash"),
 			Pair("X-Plex-Client-Profile-Name", "Android"),
-			Pair("X-Plex-Client-Profile-Extra", "add-transcode-target(type=musicProfile&context=streaming&protocol=dash&container=webm&audioCodec=opus)")
+			Pair("X-Plex-Client-Profile-Extra", "add-transcode-target(type=musicProfile&context=streaming&protocol=dash&container=${container.name.lowercase()}&audioCodec=${audioCodec.name.lowercase()})")
 		)
 		return _server!!.urlFor("/music/:/transcode/universal/start.mpd", true, params)
 	}
